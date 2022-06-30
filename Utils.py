@@ -1,11 +1,21 @@
 import re
 import pandas as pd
+from pyvi import ViTokenizer
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 df_res = pd.read_csv('DataSet.csv', encoding='utf-8')
-tokenizer = Tokenizer(num_words=10000)
-tokenizer.fit_on_texts(df_res.review_text)
+# tokenizer = Tokenizer(num_words=10000)
+# tokenizer.fit_on_texts(df_res.review_text)
+
+datacmt = []
+for d in df_res['review_text']:
+    e = ViTokenizer.tokenize(str(d))
+    datacmt.append(e)
+labelcmt = df_res['lable']
+
+tokenizer = Tokenizer()
+tokenizer.fit_on_texts(datacmt)
 
 
 def remove_emoji(string):
@@ -38,6 +48,23 @@ def remove_URL(text):
     return url.sub(r'', text)
 
 
+# def predict_file(model, tweet):
+#     test_word = str(tweet)
+#     test_word = test_word.lower()
+#     test_word = test_word.replace('[^\w\s]', '')
+#     test_word = test_word.replace('[^0-9a-zA-Z]', '')
+#     test_word = remove_URL(test_word)
+#     test_word = remove_emoji(test_word)
+#     tw = tokenizer.texts_to_sequences([test_word])
+#     print(tw)
+#     tw = pad_sequences(tw, 20)
+#     prediction = int(model.predict(tw).round().item())
+#     print(model.predict(tw))
+#     if prediction == 0:
+#         return 'POSITIVE'
+#     else:
+#         return 'NEGATIVE'
+
 def predict_file(model, tweet):
     test_word = str(tweet)
     test_word = test_word.lower()
@@ -50,7 +77,7 @@ def predict_file(model, tweet):
     tw = pad_sequences(tw, 20)
     prediction = int(model.predict(tw).round().item())
     print(model.predict(tw))
-    if prediction == 0:
-        return 'POSITIVE'
+    if (prediction == 0):
+        return ('POSITIVE')
     else:
-        return 'NEGATIVE'
+        return ('NEGATIVE')

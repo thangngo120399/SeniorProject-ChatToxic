@@ -10,6 +10,7 @@ from tensorflow.keras.layers import Dropout
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.layers import SpatialDropout1D
 from tensorflow.keras.layers import Embedding
+from pyvi import ViTokenizer, ViPosTagger
 
 df_res = pd.read_csv('DataSet.csv', encoding='utf-8')
 
@@ -55,34 +56,41 @@ def remove_emoji(string):
 def remove_one_letter_word(docs):
     return [strip_short(doc) for doc in docs]
 
+datacmt=[]
+for d in df_res['review_text']:
+    e=ViTokenizer.tokenize(str(d))
+    datacmt.append(e)
+labelcmt=df_res['lable']
 
-tokenizer = Tokenizer(num_words=10000)
-tokenizer.fit_on_texts(df_res.review_text)
+tokenizer = Tokenizer()
+tokenizer.fit_on_texts(datacmt)
+datacmtbow = tokenizer.texts_to_sequences(datacmt)
+datacmtbow= pad_sequences(datacmtbow, maxlen=20)
 
-y = df_res['lable']
-y = np.array(y)
-y = np.asarray(y).astype(np.int32)
-x = df_res['review_text'].astype(np.str)
+# y = df_res['lable']
+# y = np.array(y)
+# y = np.asarray(y).astype(np.int32)
+# x = df_res['review_text'].astype(np.str)
 
-vocab_size = len(tokenizer.word_index) + 1
+vocab_size = len(datacmtbow) + 1
 encoded_docs = tokenizer.texts_to_sequences(df_res.review_text)
 padded_sequence = pad_sequences(encoded_docs, maxlen=20)
 
 embedding_vector_length = 32
 model = Sequential()
 model.add(Embedding(vocab_size, embedding_vector_length,
-                    input_length=20))
+                                     input_length=20) )
 model.add(SpatialDropout1D(0.25))
-model.add(LSTM(50, dropout=0.5, recurrent_dropout=0.5, return_sequences=True))
+model.add(LSTM(50, dropout=0.5, recurrent_dropout=0.5,return_sequences=True))
 model.add(Dropout(0.2))
-model.add(LSTM(120, return_sequences=True))
+model.add(LSTM(120,return_sequences=True))
 model.add(Dropout(0.3))
 model.add(LSTM(40))
 model.add(Dense(1, activation='sigmoid'))
-model.compile(loss='binary_crossentropy', optimizer='adam',
-              metrics=['accuracy'])
+model.compile(loss='binary_crossentropy',optimizer='adam',
+                           metrics=['accuracy'])
 
-history = model.fit(padded_sequence, y,
+history = model.fit(padded_sequence, labelcmt,
                     validation_split=0.2, epochs=3, batch_size=32)
 
 # save the model to disk

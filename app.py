@@ -2,7 +2,6 @@ from keras.models import load_model
 from flask import Flask
 from flask_cors import CORS
 import Utils
-
 model = load_model('my_model.h5')
 
 app = Flask(__name__)

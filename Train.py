@@ -67,6 +67,11 @@ tokenizer.fit_on_texts(datacmt)
 datacmtbow = tokenizer.texts_to_sequences(datacmt)
 datacmtbow= pad_sequences(datacmtbow, maxlen=20)
 
+# y = df_res['lable']
+# y = np.array(y)
+# y = np.asarray(y).astype(np.int32)
+# x = df_res['review_text'].astype(np.str)
+
 vocab_size = len(datacmtbow) + 1
 encoded_docs = tokenizer.texts_to_sequences(df_res.review_text)
 padded_sequence = pad_sequences(encoded_docs, maxlen=20)
@@ -86,7 +91,7 @@ model.compile(loss='binary_crossentropy',optimizer='adam',
                            metrics=['accuracy'])
 
 history = model.fit(padded_sequence, labelcmt,
-                    validation_split=0.2, epochs=3, batch_size=8)
+                    validation_split=0.2, epochs=3, batch_size=32)
 
 # save the model to disk
 model.save('my_model.h5')
